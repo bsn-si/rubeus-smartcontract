@@ -28,6 +28,14 @@ cd rubeus-smartcontract
 cargo test
 ```
 
+Also you can run example from `/example` folder, it written with polkadot.js and works with client-side encryption. For run:
+
+```
+cd example/
+npm install 
+npm run start
+```
+
 ### Build Contract + metadata
 ```
 cargo contract build
