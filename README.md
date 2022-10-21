@@ -69,4 +69,4 @@ Next you need to send funds to the contract and then you can call contract's met
 
 ## License
 
-[Apache License 2.0](https://github.com/bsn-si/rubeus-smartcontract/blob/main/LICENSE) © Bela Supernova ([bsn.si](https://bsn.si))
+[Apache License 2.0](https://github.com/bsn-si/rubeus-smartcontract/blob/main/license.md) © Bela Supernova ([bsn.si](https://bsn.si))
