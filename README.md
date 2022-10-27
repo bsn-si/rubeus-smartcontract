@@ -43,12 +43,10 @@ cargo contract build
 ```
 
 ### Resolve common errors
-You may encounter compilation or optimization errors in wasm builds.
-This build is tested on `nightly-2022-08-08` toolchain, with `rustc 1.64.0 (a55dd71d5 2022-09-19)` version, if you have compilation errors try changing the toolkit and compiler version to the specified one. Also you need `wasm` target and `dylint` set.
+You need `wasm` target and `dylint` set.
 To install specified toolchain & targets please run:
 
 ``` bash
-rustup toolchain install nightly-2022-08-08
 rustup target add wasm32-unknown-unknown
 cargo install cargo-dylint
 ```

@@ -216,18 +216,6 @@ async function main() {
   );
 
   console.log("Credentials By Group 'test': ", credentialsByGroup);
-
-  // Update credential
-  const responseUpdate = await updateCredential(
-    contract,
-    signer,
-    privateKey,
-    addResponse.id,
-    undefined,
-    "test-2"
-  );
-
-  console.log("Credential updated: ", responseUpdate);
 }
 
 main()

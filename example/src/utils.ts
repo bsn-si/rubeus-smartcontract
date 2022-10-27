@@ -67,11 +67,10 @@ export const execContractCallWithResult = async (
     const data = query.output.toJSON();
 
     if (data.ok) {
-      // const gasLimit = getBalance(10, BalanceGrade.Milli)
-      //   .add(new BN(query.gasConsumed))
-      //   .toNumber();
+      const gasLimit = getBalance(100, BalanceGrade.Milli)
+        .add(new BN(query.gasConsumed))
+        .toNumber();
 
-      const gasLimit = -1;
       const extrinsic = contract.tx[method]({ gasLimit }, ...args);
 
       await waitExtrinsic(contract.api, extrinsic, signer);
