@@ -1,37 +1,46 @@
 export default {
   source: {
-    hash: "0xaa58c38b841affdadac03170ee8bfda87ae6d56c97e50d7b7a76bd08f411ae8f",
-    language: "ink! 4.0.0-alpha.3",
-    compiler: "rustc 1.64.0",
+    hash: '0x62f694d9430b43982c4065072a05f09a032b6faca9e1be31e85600080edfd339',
+    language: 'ink! 4.0.0-alpha.3',
+    compiler: 'rustc 1.64.0',
+    build_info: {
+      build_mode: 'Release',
+      cargo_contract_version: '2.0.0-alpha.5',
+      rust_toolchain: 'stable-x86_64-unknown-linux-gnu',
+      wasm_opt_settings: {
+        keep_debug_symbols: false,
+        optimization_passes: 'Z',
+      },
+    },
   },
   contract: {
-    name: "rubeus",
-    version: "0.1.0",
-    authors: ["[Anton Shramko] <[antonshramko@yandex.ru]>"],
+    name: 'rubeus',
+    version: '0.1.0',
+    authors: ['[Anton Shramko] <[antonshramko@yandex.ru]>'],
   },
   spec: {
     constructors: [
       {
         args: [
           {
-            label: "owner",
+            label: 'owner',
             type: {
-              displayName: ["AccountId"],
+              displayName: ['AccountId'],
               type: 0,
             },
           },
         ],
-        docs: ["You can set a contract owner while deploying the contract"],
-        label: "new",
+        docs: ['You can set a contract owner while deploying the contract'],
+        label: 'new',
         payable: false,
-        selector: "0x9bae9d5e",
+        selector: '0x9bae9d5e',
       },
       {
         args: [],
-        docs: ["Owner is the contract publisher by default"],
-        label: "default",
+        docs: ['Owner is the contract publisher by default'],
+        label: 'default',
         payable: false,
-        selector: "0xed4b9d1b",
+        selector: '0xed4b9d1b',
       },
     ],
     docs: [],
@@ -40,142 +49,142 @@ export default {
       {
         args: [
           {
-            label: "payload",
+            label: 'payload',
             type: {
-              displayName: ["String"],
+              displayName: ['String'],
               type: 5,
             },
           },
           {
-            label: "group",
+            label: 'group',
             type: {
-              displayName: ["String"],
+              displayName: ['String'],
               type: 5,
             },
           },
           {
-            label: "id",
+            label: 'id',
             type: {
-              displayName: ["String"],
+              displayName: ['String'],
               type: 5,
             },
           },
         ],
         docs: [],
-        label: "add_credential",
+        label: 'add_credential',
         mutates: true,
         payable: false,
         returnType: {
-          displayName: ["Result"],
+          displayName: ['Result'],
           type: 6,
         },
-        selector: "0x2b0cff89",
+        selector: '0x2b0cff89',
       },
       {
         args: [
           {
-            label: "id",
+            label: 'id',
             type: {
-              displayName: ["String"],
+              displayName: ['String'],
               type: 5,
             },
           },
           {
-            label: "payload",
+            label: 'payload',
             type: {
-              displayName: ["Option"],
+              displayName: ['Option'],
               type: 9,
             },
           },
           {
-            label: "group",
+            label: 'group',
             type: {
-              displayName: ["Option"],
+              displayName: ['Option'],
               type: 9,
             },
           },
         ],
         docs: [],
-        label: "update_credential",
+        label: 'update_credential',
         mutates: true,
         payable: false,
         returnType: {
-          displayName: ["Result"],
+          displayName: ['Result'],
           type: 6,
         },
-        selector: "0x52cacc31",
+        selector: '0x52cacc31',
       },
       {
         args: [
           {
-            label: "id",
+            label: 'id',
             type: {
-              displayName: ["String"],
+              displayName: ['String'],
               type: 5,
             },
           },
         ],
         docs: [],
-        label: "delete_credential",
+        label: 'delete_credential',
         mutates: true,
         payable: false,
         returnType: {
-          displayName: ["Result"],
+          displayName: ['Result'],
           type: 6,
         },
-        selector: "0xd6793922",
+        selector: '0xd6793922',
       },
       {
         args: [
           {
-            label: "account",
+            label: 'account',
             type: {
-              displayName: ["AccountId"],
+              displayName: ['AccountId'],
               type: 0,
             },
           },
         ],
-        docs: ["Transfer contract ownership to another user"],
-        label: "transfer_ownership",
+        docs: ['Transfer contract ownership to another user'],
+        label: 'transfer_ownership',
         mutates: true,
         payable: false,
         returnType: {
-          displayName: ["Result"],
+          displayName: ['Result'],
           type: 6,
         },
-        selector: "0x107e33ea",
+        selector: '0x107e33ea',
       },
       {
         args: [],
-        docs: ["Return all saved crendentials by caller"],
-        label: "get_credentials",
+        docs: ['Return all saved crendentials by caller'],
+        label: 'get_credentials',
         mutates: false,
         payable: false,
         returnType: {
-          displayName: ["Result"],
-          type: 10,
+          displayName: ['Vec'],
+          type: 3,
         },
-        selector: "0x483b50c7",
+        selector: '0x483b50c7',
       },
       {
         args: [
           {
-            label: "group",
+            label: 'group',
             type: {
-              displayName: ["String"],
+              displayName: ['String'],
               type: 5,
             },
           },
         ],
         docs: [],
-        label: "get_credentials_by_group",
+        label: 'get_credentials_by_group',
         mutates: false,
         payable: false,
         returnType: {
-          displayName: ["Result"],
-          type: 10,
+          displayName: ['Vec'],
+          type: 3,
         },
-        selector: "0xc4dcecac",
+        selector: '0xc4dcecac',
       },
     ],
   },
@@ -187,31 +196,31 @@ export default {
             {
               layout: {
                 leaf: {
-                  key: "0x00000000",
+                  key: '0x00000000',
                   ty: 0,
                 },
               },
-              name: "owner",
+              name: 'owner',
             },
             {
               layout: {
                 root: {
                   layout: {
                     leaf: {
-                      key: "0xf71f5020",
+                      key: '0xf71f5020',
                       ty: 3,
                     },
                   },
-                  root_key: "0xf71f5020",
+                  root_key: '0xf71f5020',
                 },
               },
-              name: "accounts",
+              name: 'accounts',
             },
           ],
-          name: "Rubeus",
+          name: 'Rubeus',
         },
       },
-      root_key: "0x00000000",
+      root_key: '0x00000000',
     },
   },
   types: [
@@ -223,12 +232,12 @@ export default {
             fields: [
               {
                 type: 1,
-                typeName: "[u8; 32]",
+                typeName: '[u8; 32]',
               },
             ],
           },
         },
-        path: ["ink_primitives", "types", "AccountId"],
+        path: ['ink_primitives', 'types', 'AccountId'],
       },
     },
     {
@@ -246,7 +255,7 @@ export default {
       id: 2,
       type: {
         def: {
-          primitive: "u8",
+          primitive: 'u8',
         },
       },
     },
@@ -267,31 +276,31 @@ export default {
           composite: {
             fields: [
               {
-                name: "payload",
+                name: 'payload',
                 type: 5,
-                typeName: "String",
+                typeName: 'String',
               },
               {
-                name: "group",
+                name: 'group',
                 type: 5,
-                typeName: "String",
+                typeName: 'String',
               },
               {
-                name: "id",
+                name: 'id',
                 type: 5,
-                typeName: "String",
+                typeName: 'String',
               },
             ],
           },
         },
-        path: ["rubeus", "rubeus", "Credential"],
+        path: ['rubeus', 'rubeus', 'Credential'],
       },
     },
     {
       id: 5,
       type: {
         def: {
-          primitive: "str",
+          primitive: 'str',
         },
       },
     },
@@ -308,7 +317,7 @@ export default {
                   },
                 ],
                 index: 0,
-                name: "Ok",
+                name: 'Ok',
               },
               {
                 fields: [
@@ -317,29 +326,29 @@ export default {
                   },
                 ],
                 index: 1,
-                name: "Err",
+                name: 'Err',
               },
             ],
           },
         },
         params: [
           {
-            name: "T",
+            name: 'T',
             type: 7,
           },
           {
-            name: "E",
+            name: 'E',
             type: 8,
           },
         ],
-        path: ["Result"],
+        path: ['Result'],
       },
     },
     {
       id: 7,
       type: {
         def: {
-          primitive: "bool",
+          primitive: 'bool',
         },
       },
     },
@@ -351,24 +360,24 @@ export default {
             variants: [
               {
                 index: 0,
-                name: "AccessOwner",
+                name: 'AccessOwner',
               },
               {
                 index: 1,
-                name: "NotFound",
+                name: 'NotFound',
               },
               {
                 index: 2,
-                name: "TransferFailed",
+                name: 'TransferFailed',
               },
               {
                 index: 3,
-                name: "UniqueIdRequired",
+                name: 'UniqueIdRequired',
               },
             ],
           },
         },
-        path: ["rubeus", "rubeus", "Error"],
+        path: ['rubeus', 'rubeus', 'Error'],
       },
     },
     {
@@ -379,7 +388,7 @@ export default {
             variants: [
               {
                 index: 0,
-                name: "None",
+                name: 'None',
               },
               {
                 fields: [
@@ -388,60 +397,20 @@ export default {
                   },
                 ],
                 index: 1,
-                name: "Some",
+                name: 'Some',
               },
             ],
           },
         },
         params: [
           {
-            name: "T",
+            name: 'T',
             type: 5,
           },
         ],
-        path: ["Option"],
-      },
-    },
-    {
-      id: 10,
-      type: {
-        def: {
-          variant: {
-            variants: [
-              {
-                fields: [
-                  {
-                    type: 3,
-                  },
-                ],
-                index: 0,
-                name: "Ok",
-              },
-              {
-                fields: [
-                  {
-                    type: 8,
-                  },
-                ],
-                index: 1,
-                name: "Err",
-              },
-            ],
-          },
-        },
-        params: [
-          {
-            name: "T",
-            type: 3,
-          },
-          {
-            name: "E",
-            type: 8,
-          },
-        ],
-        path: ["Result"],
+        path: ['Option'],
       },
     },
   ],
-  version: "4",
-};
+  version: '4',
+}

@@ -165,25 +165,26 @@ mod rubeus {
 
         /// Return all saved crendentials by caller
         #[ink(message)]
-        pub fn get_credentials(&self) -> Result<Vec<Credential>, Error> {
+        pub fn get_credentials(&self) -> Vec<Credential> {
             self.accounts
                 .get(Self::env().caller())
-                .ok_or(Error::NotFound)
+                .unwrap_or_default()
         }
 
         // Return all saved credentials by group
         #[ink(message)]
-        pub fn get_credentials_by_group(&self, group: String) -> Result<Vec<Credential>, Error> {
+        pub fn get_credentials_by_group(&self, group: String) -> Vec<Credential> {
             let credentials = self
                 .accounts
                 .get(Self::env().caller())
-                .ok_or(Error::NotFound)?;
+                .unwrap_or_default();
+
             let filtered = credentials
                 .into_iter()
                 .filter(|credential| credential.group.contains(&*group))
                 .collect::<Vec<Credential>>();
 
-            Ok(filtered)
+            filtered
         }
     }
 
