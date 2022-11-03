@@ -1,6 +1,4 @@
-// (c) 2022 Anton Shramko (anton.shramko@bsn.si)
-//
-//! Rubeus - storage for encrypted credentials
+//! Rubeus - encrypted credentials storage
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -11,7 +9,7 @@ mod rubeus {
 
     #[ink(storage)]
     pub struct Rubeus {
-        // Smart-contract owner by default is the contract publisher
+        // A contract publisher is the smart-contract owner by default
         pub owner: AccountId,
         // Accounts with password groups
         pub accounts: Mapping<AccountId, Vec<Credential>>,
@@ -56,7 +54,7 @@ mod rubeus {
             }
         }
 
-        /// Owner is the contract publisher by default
+        /// A contract publisher is the owner by default
         #[ink(constructor)]
         pub fn default() -> Self {
             Self {
