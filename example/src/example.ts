@@ -1,14 +1,14 @@
-import { hexToU8a, stringToU8a, u8aToHex, u8aToString } from "@polkadot/util";
 import { WsProvider, ApiPromise, Keyring } from "@polkadot/api";
-import { GenericAccountId, Null } from "@polkadot/types";
+import { Contract } from "@polkadot/api-contract/base";
+import { KeyringPair } from "@polkadot/keyring/types";
+import { hexToU8a, u8aToHex } from "@polkadot/util";
+import { GenericAccountId } from "@polkadot/types";
 import * as JSChaCha20 from "js-chacha20";
 import * as fs from "fs/promises";
 import * as path from "path";
 
 import { execContractCallWithResult, generateUUID } from "./utils";
 import { uploadContract } from "./upload";
-import { KeyringPair } from "@polkadot/keyring/types";
-import { Contract } from "@polkadot/api-contract/base";
 
 const RPC_URL = "ws://127.0.0.1:9944";
 
@@ -44,35 +44,45 @@ async function connect(url: string) {
   return client;
 }
 
+// encrypt credential payload object with chacha20 to hex string
 function encryptToHex(
   address: GenericAccountId,
   key: string,
   payload: Record<string, any>
 ) {
+  // convert js string to binary array
   const message = new TextEncoder().encode(JSON.stringify(payload));
+  // make nonce from target contract address
   const nonce = address.toU8a().slice(0, 12);
-
+  // encrypt binary payload with nonce
   const encrypted = new JSChaCha20(hexToU8a(key), nonce).encrypt(message);
+  // convert to hex string
   const hex = u8aToHex(encrypted, undefined, false);
 
   return hex;
 }
 
+// decrypt credential payload object encrypted with chacha20 to object
 function decryptFromHex(
   address: GenericAccountId,
   key: string,
   payload: string
 ) {
+  // make nonce from target contract address
   const nonce = address.toU8a().slice(0, 12);
+  // convert hex to binary array
   const bytes = hexToU8a(payload);
+  // decrypt binary array to string bytes
   const decrypted = new JSChaCha20(hexToU8a(key), nonce).decrypt(bytes);
-
+  // decode string binary array to native string
   const message = new TextDecoder().decode(decrypted);
+  // parse json payload
   const parsed = JSON.parse(message);
 
   return parsed;
 }
 
+// get all credentials with decrypted payload data
 async function getCredentials(
   contract: Contract<"promise">,
   signer: KeyringPair,
@@ -81,7 +91,7 @@ async function getCredentials(
   const list = await contract.query
     .getCredentials(signer.address, { gasLimit: -1 })
     .then((response) => response.output.toJSON() as any)
-    .then(({ ok: data }) =>
+    .then((data) =>
       data.map((credential) => {
         credential.decrypted = decryptFromHex(
           contract.address,
@@ -96,6 +106,7 @@ async function getCredentials(
   return list;
 }
 
+// get all credentials by group with decrypted payload data
 async function getCredentialsByGroup(
   contract: Contract<"promise">,
   signer: KeyringPair,
@@ -105,7 +116,7 @@ async function getCredentialsByGroup(
   const list = await contract.query
     .getCredentialsByGroup(signer.address, { gasLimit: -1 }, group)
     .then((response) => response.output.toJSON() as any)
-    .then(({ ok: data }) =>
+    .then((data) =>
       data.map((credential) => {
         credential.decrypted = decryptFromHex(
           contract.address,
@@ -120,6 +131,7 @@ async function getCredentialsByGroup(
   return list;
 }
 
+// add new credential with chacha20 encryption to contract
 async function addCredential(
   contract: Contract<"promise">,
   signer: KeyringPair,
@@ -127,7 +139,9 @@ async function addCredential(
   group: string,
   payload: any
 ) {
+  // encrypt credential payload by caller private key
   const encrypted = encryptToHex(contract.address, privateKey, payload);
+  // generate unique id for credential
   const id = generateUUID();
 
   const response = await execContractCallWithResult(
@@ -188,7 +202,7 @@ async function main() {
   const contract = await uploadContract(api, signer, wasm);
   console.log("Contract upload & Instantiated: ", contract.address.toHuman());
 
-  // Basic create operation with credential
+  // Add new credential to instantiated contract
   const addResponse = await addCredential(
     contract,
     signer,

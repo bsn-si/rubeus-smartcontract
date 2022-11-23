@@ -4,8 +4,8 @@
 
 #[ink::contract]
 mod rubeus {
-    use scale_info::prelude::{string::String, vec::Vec};
     use ink::storage::Mapping;
+    use scale_info::prelude::{string::String, vec::Vec};
 
     #[ink(storage)]
     pub struct Rubeus {
@@ -63,7 +63,7 @@ mod rubeus {
             }
         }
 
-        // Add new credential
+        /// Method for add new credential, with common payload. Note: a unique id is also required as a parameter, taking into runtime specifics.
         #[ink(message)]
         pub fn add_credential(
             &mut self,
@@ -93,7 +93,7 @@ mod rubeus {
                 .ok_or(Error::UniqueIdRequired)
         }
 
-        // Update encrypted payload for credential
+        /// Method for update for credential, you can update the payload or the group, or both.  
         #[ink(message)]
         pub fn update_credential(
             &mut self,
@@ -128,7 +128,7 @@ mod rubeus {
             }
         }
 
-        // Delete saved credential by id
+        /// Method for delete saved credential by id
         #[ink(message)]
         pub fn delete_credential(&mut self, id: String) -> Result<bool, Error> {
             let caller = Self::env().caller();
@@ -150,6 +150,25 @@ mod rubeus {
             }
         }
 
+        /// List of all saved credentials by caller
+        #[ink(message)]
+        pub fn get_credentials(&self) -> Vec<Credential> {
+            self.accounts.get(Self::env().caller()).unwrap_or_default()
+        }
+
+        /// List of all saved credentials by group and caller
+        #[ink(message)]
+        pub fn get_credentials_by_group(&self, group: String) -> Vec<Credential> {
+            let credentials = self.accounts.get(Self::env().caller()).unwrap_or_default();
+
+            let filtered = credentials
+                .into_iter()
+                .filter(|credential| credential.group.contains(&*group))
+                .collect::<Vec<Credential>>();
+
+            filtered
+        }
+
         /// Transfer contract ownership to another user
         #[ink(message)]
         pub fn transfer_ownership(&mut self, account: AccountId) -> Result<bool, Error> {
@@ -160,30 +179,6 @@ mod rubeus {
                 })
                 .ok_or(Error::AccessOwner)
         }
-
-        /// Return all saved crendentials by caller
-        #[ink(message)]
-        pub fn get_credentials(&self) -> Vec<Credential> {
-            self.accounts
-                .get(Self::env().caller())
-                .unwrap_or_default()
-        }
-
-        // Return all saved credentials by group
-        #[ink(message)]
-        pub fn get_credentials_by_group(&self, group: String) -> Vec<Credential> {
-            let credentials = self
-                .accounts
-                .get(Self::env().caller())
-                .unwrap_or_default();
-
-            let filtered = credentials
-                .into_iter()
-                .filter(|credential| credential.group.contains(&*group))
-                .collect::<Vec<Credential>>();
-
-            filtered
-        }
     }
 
     #[cfg(test)]
@@ -191,23 +186,22 @@ mod rubeus {
         use super::*;
 
         #[ink::test]
-        fn check_crud_credential() {
+        fn create_credential() {
             let accounts = default_accounts();
 
             // setup contract
             let mut contract = create_contract(1000);
 
-            // setup sender, (by default `alice` also publisher and can add coupons)
             set_sender(accounts.alice);
             assert_eq!(contract.owner, accounts.alice);
 
-            // add credential by caller account
             let credential = Credential {
                 group: "group".into(),
-                payload: "pass".into(),
+                payload: "payload".into(),
                 id: "1".into(),
             };
 
+            // add new credential
             assert_eq!(
                 contract.add_credential(
                     credential.payload.clone(),
@@ -217,6 +211,7 @@ mod rubeus {
                 Ok(true)
             );
 
+            // error checking - you can add only with unique id
             assert_eq!(
                 contract.add_credential(
                     credential.payload.clone(),
@@ -226,49 +221,152 @@ mod rubeus {
                 Err(Error::UniqueIdRequired)
             );
 
-            assert_eq!(
-                contract.accounts.get(accounts.alice).unwrap()[0],
-                credential
-            );
+            // check for success adding credential
+            assert_eq!(contract.get_credentials()[0], credential);
+        }
 
-            // update credential
-            let updated_credential = Credential {
-                group: "group next".into(),
-                payload: "pass next".into(),
+        #[ink::test]
+        fn update_credential() {
+            let accounts = default_accounts();
+
+            // setup contract
+            let mut contract = create_contract(1000);
+
+            set_sender(accounts.alice);
+            assert_eq!(contract.owner, accounts.alice);
+
+            contract
+                .add_credential("payload".to_string(), "group".to_string(), "1".to_string())
+                .unwrap();
+
+            // params to update credential & compares later
+            let credential = Credential {
+                payload: "another_payload".into(),
+                group: "another_group".into(),
                 id: "1".into(),
             };
 
+            // update existing credential
             assert_eq!(
                 contract.update_credential(
                     credential.id.clone(),
-                    Some(updated_credential.payload.clone()),
-                    Some(updated_credential.group.clone()),
+                    Some(credential.payload.clone()),
+                    Some(credential.group.clone()),
                 ),
                 Ok(true)
             );
 
+            // error checking - you can update only for existing id
             assert_eq!(
                 contract.update_credential(
-                    "not_found".into(),
-                    Some(updated_credential.payload.clone()),
-                    Some(updated_credential.group.clone()),
+                    "non_existent_id".into(),
+                    Some(credential.payload.clone()),
+                    Some(credential.group.clone()),
                 ),
                 Err(Error::NotFound)
             );
 
-            assert_eq!(
-                contract.accounts.get(accounts.alice).unwrap()[0],
-                updated_credential
-            );
+            // check for success updating credential
+            assert_eq!(contract.get_credentials()[0], credential);
+        }
 
+        #[ink::test]
+        fn delete_credential() {
+            let accounts = default_accounts();
+
+            // setup contract
+            let mut contract = create_contract(1000);
+
+            set_sender(accounts.alice);
+            assert_eq!(contract.owner, accounts.alice);
+
+            contract
+                .add_credential("payload".to_string(), "group".to_string(), "1".to_string())
+                .unwrap();
+
+            // error checking - trying to delete non-existing credential
             assert_eq!(
                 contract.delete_credential("100".into()),
                 Err(Error::NotFound)
             );
 
+            // delete existing credential
             assert_eq!(contract.delete_credential("1".into()), Ok(true));
-
+            // check for success deleting credential
             assert_eq!(contract.accounts.get(accounts.alice).unwrap(), vec![]);
+        }
+
+        #[ink::test]
+        fn list_of_credentials() {
+            let accounts = default_accounts();
+
+            // setup contract
+            let mut contract = create_contract(1000);
+
+            set_sender(accounts.alice);
+            assert_eq!(contract.owner, accounts.alice);
+
+            let first_credential = Credential {
+                payload: "first_payload".into(),
+                group: "first_group".into(),
+                id: "1".into(),
+            };
+
+            let second_credential = Credential {
+                payload: "second_payload".into(),
+                group: "second_group".into(),
+                id: "2".into(),
+            };
+
+            contract
+                .add_credential(
+                    first_credential.payload.clone(),
+                    first_credential.group.clone(),
+                    first_credential.id.clone(),
+                )
+                .unwrap();
+
+            contract
+                .add_credential(
+                    second_credential.payload.clone(),
+                    second_credential.group.clone(),
+                    second_credential.id.clone(),
+                )
+                .unwrap();
+
+            let all_credentials = contract.get_credentials();
+            // check list by size
+            assert_eq!(all_credentials.len(), 2);
+            // compare for existing
+            assert_eq!(all_credentials, vec![first_credential.clone(), second_credential.clone()]);
+
+            let credentials_by_first_group = contract.get_credentials_by_group(first_credential.group.clone());
+            // check list by size
+            assert_eq!(credentials_by_first_group.len(), 1);
+            // compare for existing
+            assert_eq!(credentials_by_first_group, vec![first_credential.clone()]);
+
+            let credentials_by_second_group = contract.get_credentials_by_group(second_credential.group.clone());
+            // check list by size
+            assert_eq!(credentials_by_second_group.len(), 1);
+            // compare for existing
+            assert_eq!(credentials_by_second_group, vec![second_credential.clone()]);
+        }
+
+        #[ink::test]
+        fn transfer_ownership() {
+            let accounts = default_accounts();
+
+            // setup contract
+            let mut contract = create_contract(1000);
+
+            set_sender(accounts.alice);
+            assert_eq!(contract.owner, accounts.alice);
+
+            // transfer ownership to bob
+            assert_eq!(contract.transfer_ownership(accounts.bob), Ok(true));
+            // check for new owner of the contract
+            assert_eq!(contract.owner, accounts.bob);
         }
 
         fn create_contract(initial_balance: Balance) -> Rubeus {
