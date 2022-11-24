@@ -2,12 +2,12 @@
   "name": "example",
   "version": "1.0.0",
   "description": "Example of use rubeus contract with client-side encryption",
-  "main": "./src/e2e-test.ts",
+  "main": "./src/example.ts",
   "author": "Anton Shramko",
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "ts-node ./src/e2e-test.ts"
+    "start": "ts-node ./src/example.ts"
   },
   "dependencies": {
     "@polkadot/api": "^9.4.3",
