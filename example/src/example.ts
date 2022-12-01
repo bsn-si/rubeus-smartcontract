@@ -6,6 +6,7 @@ import { GenericAccountId } from "@polkadot/types";
 import * as JSChaCha20 from "js-chacha20";
 import * as fs from "fs/promises";
 import * as path from "path";
+import * as pako from "pako";
 
 import { execContractCallWithResult, generateUUID } from "./utils";
 import { uploadContract } from "./upload";
@@ -56,8 +57,10 @@ function encryptToHex(
   const nonce = address.toU8a().slice(0, 12);
   // encrypt binary payload with nonce
   const encrypted = new JSChaCha20(hexToU8a(key), nonce).encrypt(message);
+  // zip data 
+  const compressed = pako.deflate(encrypted);
   // convert to hex string
-  const hex = u8aToHex(encrypted, undefined, false);
+  const hex = u8aToHex(compressed, undefined, false);
 
   return hex;
 }
@@ -72,8 +75,10 @@ function decryptFromHex(
   const nonce = address.toU8a().slice(0, 12);
   // convert hex to binary array
   const bytes = hexToU8a(payload);
+  // decompress data
+  const decompressed = pako.inflate(bytes);
   // decrypt binary array to string bytes
-  const decrypted = new JSChaCha20(hexToU8a(key), nonce).decrypt(bytes);
+  const decrypted = new JSChaCha20(hexToU8a(key), nonce).decrypt(decompressed);
   // decode string binary array to native string
   const message = new TextDecoder().decode(decrypted);
   // parse json payload
@@ -172,7 +177,7 @@ async function updateCredential(
   const _payload = payload
     ? encryptToHex(contract.address, privateKey, payload)
     : undefined;
-    
+
   const _group = group ? group : undefined;
 
   const response = await execContractCallWithResult(
