@@ -16,7 +16,7 @@ mod rubeus {
     }
 
     /// Credential struct
-    #[derive(Debug, Default, Clone, PartialEq, scale::Encode, scale::Decode)]
+    #[derive(Debug, Default, Clone, Eq, PartialEq, scale::Encode, scale::Decode)]
     #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
     pub struct Credential {
         pub payload: String,
@@ -80,11 +80,9 @@ mod rubeus {
             };
 
             let mut credentials = self.accounts.get(caller).unwrap_or_default();
+            let not_exist = !credentials.iter().any(|c| c.id == id);
 
-            credentials
-                .iter()
-                .find(|c| c.id == id)
-                .is_none()
+            not_exist
                 .then(|| {
                     credentials.push(credential);
                     self.accounts.insert(caller, &credentials);
@@ -161,12 +159,10 @@ mod rubeus {
         pub fn get_credentials_by_group(&self, group: String) -> Vec<Credential> {
             let credentials = self.accounts.get(Self::env().caller()).unwrap_or_default();
 
-            let filtered = credentials
+            credentials
                 .into_iter()
                 .filter(|credential| credential.group.contains(&*group))
-                .collect::<Vec<Credential>>();
-
-            filtered
+                .collect::<Vec<Credential>>()
         }
 
         /// Transfer contract ownership to another user
