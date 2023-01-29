@@ -12,7 +12,9 @@ mod rubeus {
         // A contract publisher is the smart-contract owner by default
         pub owner: AccountId,
         // Accounts with password groups
-        pub accounts: Mapping<AccountId, Vec<Credential>>,
+        pub credentials: Mapping<AccountId, Vec<Credential>>,
+        // Accounts with notes
+        pub notes: Mapping<AccountId, Vec<Note>>,
     }
 
     /// Credential struct
@@ -25,6 +27,20 @@ mod rubeus {
     }
 
     impl From<scale::Error> for Credential {
+        fn from(_: scale::Error) -> Self {
+            panic!("encountered unexpected invalid SCALE encoding")
+        }
+    }
+
+    /// Note struct
+    #[derive(Debug, Default, Clone, Eq, PartialEq, scale::Encode, scale::Decode)]
+    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+    pub struct Note {
+        pub payload: String,
+        pub id: String,
+    }
+
+    impl From<scale::Error> for Note {
         fn from(_: scale::Error) -> Self {
             panic!("encountered unexpected invalid SCALE encoding")
         }
@@ -49,7 +65,8 @@ mod rubeus {
         #[ink(constructor)]
         pub fn new(owner: AccountId) -> Self {
             Self {
-                accounts: Mapping::new(),
+                credentials: Mapping::new(),
+                notes: Mapping::new(),
                 owner,
             }
         }
@@ -59,7 +76,8 @@ mod rubeus {
         pub fn default() -> Self {
             Self {
                 owner: Self::env().caller(),
-                accounts: Mapping::new(),
+                credentials: Mapping::new(),
+                notes: Mapping::new(),
             }
         }
 
@@ -79,13 +97,13 @@ mod rubeus {
                 id: id.clone(),
             };
 
-            let mut credentials = self.accounts.get(caller).unwrap_or_default();
+            let mut credentials = self.credentials.get(caller).unwrap_or_default();
             let not_exist = !credentials.iter().any(|c| c.id == id);
 
             not_exist
                 .then(|| {
                     credentials.push(credential);
-                    self.accounts.insert(caller, &credentials);
+                    self.credentials.insert(caller, &credentials);
                     true
                 })
                 .ok_or(Error::UniqueIdRequired)
@@ -101,10 +119,10 @@ mod rubeus {
         ) -> Result<bool, Error> {
             let caller = Self::env().caller();
 
-            if !self.accounts.contains(Self::env().caller()) {
+            if !self.credentials.contains(Self::env().caller()) {
                 Err(Error::NotFound)
             } else {
-                let mut credentials = self.accounts.get(caller).ok_or(Error::NotFound)?;
+                let mut credentials = self.credentials.get(caller).ok_or(Error::NotFound)?;
 
                 let index = credentials
                     .iter()
@@ -121,7 +139,7 @@ mod rubeus {
                     credential.group = _group;
                 }
 
-                self.accounts.insert(caller, &credentials);
+                self.credentials.insert(caller, &credentials);
                 Ok(true)
             }
         }
@@ -131,10 +149,10 @@ mod rubeus {
         pub fn delete_credential(&mut self, id: String) -> Result<bool, Error> {
             let caller = Self::env().caller();
 
-            if !self.accounts.contains(Self::env().caller()) {
+            if !self.credentials.contains(Self::env().caller()) {
                 Err(Error::NotFound)
             } else {
-                let mut credentials = self.accounts.get(caller).ok_or(Error::NotFound)?;
+                let mut credentials = self.credentials.get(caller).ok_or(Error::NotFound)?;
 
                 let index = credentials
                     .iter()
@@ -143,7 +161,7 @@ mod rubeus {
 
                 credentials.remove(index);
 
-                self.accounts.insert(caller, &credentials);
+                self.credentials.insert(caller, &credentials);
                 Ok(true)
             }
         }
@@ -151,18 +169,102 @@ mod rubeus {
         /// List of all saved credentials by caller
         #[ink(message)]
         pub fn get_credentials(&self) -> Vec<Credential> {
-            self.accounts.get(Self::env().caller()).unwrap_or_default()
+            self.credentials.get(Self::env().caller()).unwrap_or_default()
         }
 
         /// List of all saved credentials by group and caller
         #[ink(message)]
         pub fn get_credentials_by_group(&self, group: String) -> Vec<Credential> {
-            let credentials = self.accounts.get(Self::env().caller()).unwrap_or_default();
+            let credentials = self.credentials.get(Self::env().caller()).unwrap_or_default();
 
             credentials
                 .into_iter()
                 .filter(|credential| credential.group.contains(&*group))
                 .collect::<Vec<Credential>>()
+        }
+
+        /// Method for add new note, with common payload. Note: a unique id is also required as a parameter, taking into runtime specifics.
+        #[ink(message)]
+        pub fn add_note(
+            &mut self,
+            payload: String,
+            id: String,
+        ) -> Result<bool, Error> {
+            let caller = Self::env().caller();
+
+            let note = Note {
+                id: id.clone(),
+                payload,
+            };
+
+            let mut notes = self.notes.get(caller).unwrap_or_default();
+            let not_exist = !notes.iter().any(|c| c.id == id);
+
+            not_exist
+                .then(|| {
+                    notes.push(note);
+                    self.notes.insert(caller, &notes);
+                    true
+                })
+                .ok_or(Error::UniqueIdRequired)
+        }
+
+        /// Method for update for note, you can update the payload or the group, or both.  
+        #[ink(message)]
+        pub fn update_note(
+            &mut self,
+            id: String,
+            payload: Option<String>,
+        ) -> Result<bool, Error> {
+            let caller = Self::env().caller();
+
+            if !self.notes.contains(Self::env().caller()) {
+                Err(Error::NotFound)
+            } else {
+                let mut notes = self.notes.get(caller).ok_or(Error::NotFound)?;
+
+                let index = notes
+                    .iter()
+                    .position(|c| c.id == id)
+                    .ok_or(Error::NotFound)?;
+
+                let note = notes.get_mut(index).ok_or(Error::NotFound)?;
+
+                if let Some(_payload) = payload {
+                    note.payload = _payload;
+                }
+
+                self.notes.insert(caller, &notes);
+                Ok(true)
+            }
+        }
+
+        /// Method for delete saved note by id
+        #[ink(message)]
+        pub fn delete_note(&mut self, id: String) -> Result<bool, Error> {
+            let caller = Self::env().caller();
+
+            if !self.notes.contains(Self::env().caller()) {
+                Err(Error::NotFound)
+            } else {
+                let mut notes = self.notes.get(caller).ok_or(Error::NotFound)?;
+
+                let index = notes
+                    .iter()
+                    .position(|c| c.id == id)
+                    .ok_or(Error::NotFound)?;
+
+                notes.remove(index);
+
+                self.notes.insert(caller, &notes);
+                Ok(true)
+            }
+        }
+
+        /// List of all saved notes by caller
+        #[ink(message)]
+        pub fn get_notes(&self) -> Vec<Note> {
+            self.notes.get(Self::env().caller()).unwrap_or_default()
         }
 
         /// Transfer contract ownership to another user
@@ -289,7 +391,7 @@ mod rubeus {
             // delete existing credential
             assert_eq!(contract.delete_credential("1".into()), Ok(true));
             // check for success deleting credential
-            assert_eq!(contract.accounts.get(accounts.alice).unwrap(), vec![]);
+            assert_eq!(contract.credentials.get(accounts.alice).unwrap(), vec![]);
         }
 
         #[ink::test]
@@ -347,6 +449,152 @@ mod rubeus {
             assert_eq!(credentials_by_second_group.len(), 1);
             // compare for existing
             assert_eq!(credentials_by_second_group, vec![second_credential.clone()]);
+        }
+
+        #[ink::test]
+        fn create_note() {
+            let accounts = default_accounts();
+        
+            // setup contract
+            let mut contract = create_contract(1000);
+        
+            set_sender(accounts.alice);
+            assert_eq!(contract.owner, accounts.alice);
+        
+            let note = Note {
+                payload: "payload".into(),
+                id: "1".into(),
+            };
+        
+            // add new note
+            assert_eq!(
+                contract.add_note(
+                    note.payload.clone(),
+                    note.id.clone()
+                ),
+                Ok(true)
+            );
+        
+            // error checking - you can add only with unique id
+            assert_eq!(
+                contract.add_note(
+                    note.payload.clone(),
+                    note.id.clone()
+                ),
+                Err(Error::UniqueIdRequired)
+            );
+        
+            // check for success adding note
+            assert_eq!(contract.get_notes()[0], note);
+        }
+        
+        #[ink::test]
+        fn update_note() {
+            let accounts = default_accounts();
+        
+            // setup contract
+            let mut contract = create_contract(1000);
+        
+            set_sender(accounts.alice);
+            assert_eq!(contract.owner, accounts.alice);
+        
+            contract
+                .add_note("payload".to_string(), "1".to_string())
+                .unwrap();
+        
+            // params to update note & compares later
+            let note = Note {
+                payload: "another_payload".into(),
+                id: "1".into(),
+            };
+        
+            // update existing note
+            assert_eq!(
+                contract.update_note(
+                    note.id.clone(),
+                    Some(note.payload.clone()),
+                ),
+                Ok(true)
+            );
+        
+            // error checking - you can update only for existing id
+            assert_eq!(
+                contract.update_note(
+                    "non_existent_id".into(),
+                    Some(note.payload.clone()),
+                ),
+                Err(Error::NotFound)
+            );
+        
+            // check for success updating note
+            assert_eq!(contract.get_notes()[0], note);
+        }
+        
+        #[ink::test]
+        fn delete_note() {
+            let accounts = default_accounts();
+        
+            // setup contract
+            let mut contract = create_contract(1000);
+        
+            set_sender(accounts.alice);
+            assert_eq!(contract.owner, accounts.alice);
+        
+            contract
+                .add_note("payload".to_string(), "1".to_string())
+                .unwrap();
+        
+            // error checking - trying to delete non-existing note
+            assert_eq!(
+                contract.delete_note("100".into()),
+                Err(Error::NotFound)
+            );
+        
+            // delete existing note
+            assert_eq!(contract.delete_note("1".into()), Ok(true));
+            // check for success deleting note
+            assert_eq!(contract.notes.get(accounts.alice).unwrap(), vec![]);
+        }
+        
+        #[ink::test]
+        fn list_of_notes() {
+            let accounts = default_accounts();
+        
+            // setup contract
+            let mut contract = create_contract(1000);
+        
+            set_sender(accounts.alice);
+            assert_eq!(contract.owner, accounts.alice);
+        
+            let first_note = Note {
+                payload: "first_payload".into(),
+                id: "1".into(),
+            };
+        
+            let second_note = Note {
+                payload: "second_payload".into(),
+                id: "2".into(),
+            };
+        
+            contract
+                .add_note(
+                    first_note.payload.clone(),
+                    first_note.id.clone(),
+                )
+                .unwrap();
+        
+            contract
+                .add_note(
+                    second_note.payload.clone(),
+                    second_note.id.clone(),
+                )
+                .unwrap();
+        
+            let all_notes = contract.get_notes();
+            // check list by size
+            assert_eq!(all_notes.len(), 2);
+            // compare for existing
+            assert_eq!(all_notes, vec![first_note.clone(), second_note.clone()]);
         }
 
         #[ink::test]
