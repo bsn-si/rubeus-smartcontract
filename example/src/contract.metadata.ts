@@ -1,46 +1,46 @@
 export default {
   source: {
-    hash: '0x62f694d9430b43982c4065072a05f09a032b6faca9e1be31e85600080edfd339',
-    language: 'ink! 4.0.0-alpha.3',
-    compiler: 'rustc 1.64.0',
+    hash: "0xbb689fede710d1f551c59ab396a4f1eb68a30ca80f6ab19dc33824f354e3d58d",
+    language: "ink! 4.0.0-alpha.3",
+    compiler: "rustc 1.66.1",
     build_info: {
-      build_mode: 'Release',
-      cargo_contract_version: '2.0.0-alpha.5',
-      rust_toolchain: 'stable-x86_64-unknown-linux-gnu',
+      build_mode: "Release",
+      cargo_contract_version: "2.0.0-alpha.5",
+      rust_toolchain: "stable-x86_64-unknown-linux-gnu",
       wasm_opt_settings: {
         keep_debug_symbols: false,
-        optimization_passes: 'Z',
+        optimization_passes: "Z",
       },
     },
   },
   contract: {
-    name: 'rubeus',
-    version: '0.1.0',
-    authors: ['[Anton Shramko] <[antonshramko@yandex.ru]>'],
+    name: "rubeus",
+    version: "0.1.0",
+    authors: ["[Anton Shramko] <[antonshramko@yandex.ru]>"],
   },
   spec: {
     constructors: [
       {
         args: [
           {
-            label: 'owner',
+            label: "owner",
             type: {
-              displayName: ['AccountId'],
+              displayName: ["AccountId"],
               type: 0,
             },
           },
         ],
-        docs: ['You can set a contract owner while deploying the contract'],
-        label: 'new',
+        docs: ["You can set a contract owner while deploying the contract"],
+        label: "new",
         payable: false,
-        selector: '0x9bae9d5e',
+        selector: "0x9bae9d5e",
       },
       {
         args: [],
-        docs: ['Owner is the contract publisher by default'],
-        label: 'default',
+        docs: ["A contract publisher is the owner by default"],
+        label: "default",
         payable: false,
-        selector: '0xed4b9d1b',
+        selector: "0xed4b9d1b",
       },
     ],
     docs: [],
@@ -49,142 +49,236 @@ export default {
       {
         args: [
           {
-            label: 'payload',
+            label: "payload",
             type: {
-              displayName: ['String'],
+              displayName: ["String"],
               type: 5,
             },
           },
           {
-            label: 'group',
+            label: "group",
             type: {
-              displayName: ['String'],
+              displayName: ["String"],
               type: 5,
             },
           },
           {
-            label: 'id',
+            label: "id",
             type: {
-              displayName: ['String'],
-              type: 5,
-            },
-          },
-        ],
-        docs: [],
-        label: 'add_credential',
-        mutates: true,
-        payable: false,
-        returnType: {
-          displayName: ['Result'],
-          type: 6,
-        },
-        selector: '0x2b0cff89',
-      },
-      {
-        args: [
-          {
-            label: 'id',
-            type: {
-              displayName: ['String'],
-              type: 5,
-            },
-          },
-          {
-            label: 'payload',
-            type: {
-              displayName: ['Option'],
-              type: 9,
-            },
-          },
-          {
-            label: 'group',
-            type: {
-              displayName: ['Option'],
-              type: 9,
-            },
-          },
-        ],
-        docs: [],
-        label: 'update_credential',
-        mutates: true,
-        payable: false,
-        returnType: {
-          displayName: ['Result'],
-          type: 6,
-        },
-        selector: '0x52cacc31',
-      },
-      {
-        args: [
-          {
-            label: 'id',
-            type: {
-              displayName: ['String'],
+              displayName: ["String"],
               type: 5,
             },
           },
         ],
-        docs: [],
-        label: 'delete_credential',
+        docs: [
+          "Method for add new credential, with common payload. Note: a unique id is also required as a parameter, taking into runtime specifics.",
+        ],
+        label: "add_credential",
         mutates: true,
         payable: false,
         returnType: {
-          displayName: ['Result'],
-          type: 6,
+          displayName: ["Result"],
+          type: 8,
         },
-        selector: '0xd6793922',
+        selector: "0x2b0cff89",
       },
       {
         args: [
           {
-            label: 'account',
+            label: "id",
             type: {
-              displayName: ['AccountId'],
+              displayName: ["String"],
+              type: 5,
+            },
+          },
+          {
+            label: "payload",
+            type: {
+              displayName: ["Option"],
+              type: 11,
+            },
+          },
+          {
+            label: "group",
+            type: {
+              displayName: ["Option"],
+              type: 11,
+            },
+          },
+        ],
+        docs: [
+          "Method for update for credential, you can update the payload or the group, or both.",
+        ],
+        label: "update_credential",
+        mutates: true,
+        payable: false,
+        returnType: {
+          displayName: ["Result"],
+          type: 8,
+        },
+        selector: "0x52cacc31",
+      },
+      {
+        args: [
+          {
+            label: "id",
+            type: {
+              displayName: ["String"],
+              type: 5,
+            },
+          },
+        ],
+        docs: ["Method for delete saved credential by id"],
+        label: "delete_credential",
+        mutates: true,
+        payable: false,
+        returnType: {
+          displayName: ["Result"],
+          type: 8,
+        },
+        selector: "0xd6793922",
+      },
+      {
+        args: [],
+        docs: ["List of all saved credentials by caller"],
+        label: "get_credentials",
+        mutates: false,
+        payable: false,
+        returnType: {
+          displayName: ["Vec"],
+          type: 3,
+        },
+        selector: "0x483b50c7",
+      },
+      {
+        args: [
+          {
+            label: "group",
+            type: {
+              displayName: ["String"],
+              type: 5,
+            },
+          },
+        ],
+        docs: ["List of all saved credentials by group and caller"],
+        label: "get_credentials_by_group",
+        mutates: false,
+        payable: false,
+        returnType: {
+          displayName: ["Vec"],
+          type: 3,
+        },
+        selector: "0xc4dcecac",
+      },
+      {
+        args: [
+          {
+            label: "payload",
+            type: {
+              displayName: ["String"],
+              type: 5,
+            },
+          },
+          {
+            label: "id",
+            type: {
+              displayName: ["String"],
+              type: 5,
+            },
+          },
+        ],
+        docs: [
+          "Method for add new note, with common payload. Note: a unique id is also required as a parameter, taking into runtime specifics.",
+        ],
+        label: "add_note",
+        mutates: true,
+        payable: false,
+        returnType: {
+          displayName: ["Result"],
+          type: 8,
+        },
+        selector: "0x3493b4f2",
+      },
+      {
+        args: [
+          {
+            label: "id",
+            type: {
+              displayName: ["String"],
+              type: 5,
+            },
+          },
+          {
+            label: "payload",
+            type: {
+              displayName: ["Option"],
+              type: 11,
+            },
+          },
+        ],
+        docs: [
+          "Method for update for note, you can update the payload or the group, or both.",
+        ],
+        label: "update_note",
+        mutates: true,
+        payable: false,
+        returnType: {
+          displayName: ["Result"],
+          type: 8,
+        },
+        selector: "0xdd54a5dc",
+      },
+      {
+        args: [
+          {
+            label: "id",
+            type: {
+              displayName: ["String"],
+              type: 5,
+            },
+          },
+        ],
+        docs: ["Method for delete saved note by id"],
+        label: "delete_note",
+        mutates: true,
+        payable: false,
+        returnType: {
+          displayName: ["Result"],
+          type: 8,
+        },
+        selector: "0xdd461fe1",
+      },
+      {
+        args: [],
+        docs: ["List of all saved notes by caller"],
+        label: "get_notes",
+        mutates: false,
+        payable: false,
+        returnType: {
+          displayName: ["Vec"],
+          type: 6,
+        },
+        selector: "0xbc552132",
+      },
+      {
+        args: [
+          {
+            label: "account",
+            type: {
+              displayName: ["AccountId"],
               type: 0,
             },
           },
         ],
-        docs: ['Transfer contract ownership to another user'],
-        label: 'transfer_ownership',
+        docs: ["Transfer contract ownership to another user"],
+        label: "transfer_ownership",
         mutates: true,
         payable: false,
         returnType: {
-          displayName: ['Result'],
-          type: 6,
+          displayName: ["Result"],
+          type: 8,
         },
-        selector: '0x107e33ea',
-      },
-      {
-        args: [],
-        docs: ['Return all saved crendentials by caller'],
-        label: 'get_credentials',
-        mutates: false,
-        payable: false,
-        returnType: {
-          displayName: ['Vec'],
-          type: 3,
-        },
-        selector: '0x483b50c7',
-      },
-      {
-        args: [
-          {
-            label: 'group',
-            type: {
-              displayName: ['String'],
-              type: 5,
-            },
-          },
-        ],
-        docs: [],
-        label: 'get_credentials_by_group',
-        mutates: false,
-        payable: false,
-        returnType: {
-          displayName: ['Vec'],
-          type: 3,
-        },
-        selector: '0xc4dcecac',
+        selector: "0x107e33ea",
       },
     ],
   },
@@ -196,31 +290,45 @@ export default {
             {
               layout: {
                 leaf: {
-                  key: '0x00000000',
+                  key: "0x00000000",
                   ty: 0,
                 },
               },
-              name: 'owner',
+              name: "owner",
             },
             {
               layout: {
                 root: {
                   layout: {
                     leaf: {
-                      key: '0xf71f5020',
+                      key: "0x9f0c1f85",
                       ty: 3,
                     },
                   },
-                  root_key: '0xf71f5020',
+                  root_key: "0x9f0c1f85",
                 },
               },
-              name: 'accounts',
+              name: "credentials",
+            },
+            {
+              layout: {
+                root: {
+                  layout: {
+                    leaf: {
+                      key: "0xd62b821a",
+                      ty: 6,
+                    },
+                  },
+                  root_key: "0xd62b821a",
+                },
+              },
+              name: "notes",
             },
           ],
-          name: 'Rubeus',
+          name: "Rubeus",
         },
       },
-      root_key: '0x00000000',
+      root_key: "0x00000000",
     },
   },
   types: [
@@ -232,12 +340,12 @@ export default {
             fields: [
               {
                 type: 1,
-                typeName: '[u8; 32]',
+                typeName: "[u8; 32]",
               },
             ],
           },
         },
-        path: ['ink_primitives', 'types', 'AccountId'],
+        path: ["ink_primitives", "types", "AccountId"],
       },
     },
     {
@@ -255,7 +363,7 @@ export default {
       id: 2,
       type: {
         def: {
-          primitive: 'u8',
+          primitive: "u8",
         },
       },
     },
@@ -276,31 +384,31 @@ export default {
           composite: {
             fields: [
               {
-                name: 'payload',
+                name: "payload",
                 type: 5,
-                typeName: 'String',
+                typeName: "String",
               },
               {
-                name: 'group',
+                name: "group",
                 type: 5,
-                typeName: 'String',
+                typeName: "String",
               },
               {
-                name: 'id',
+                name: "id",
                 type: 5,
-                typeName: 'String',
+                typeName: "String",
               },
             ],
           },
         },
-        path: ['rubeus', 'rubeus', 'Credential'],
+        path: ["rubeus", "rubeus", "Credential"],
       },
     },
     {
       id: 5,
       type: {
         def: {
-          primitive: 'str',
+          primitive: "str",
         },
       },
     },
@@ -308,48 +416,32 @@ export default {
       id: 6,
       type: {
         def: {
-          variant: {
-            variants: [
-              {
-                fields: [
-                  {
-                    type: 7,
-                  },
-                ],
-                index: 0,
-                name: 'Ok',
-              },
-              {
-                fields: [
-                  {
-                    type: 8,
-                  },
-                ],
-                index: 1,
-                name: 'Err',
-              },
-            ],
-          },
-        },
-        params: [
-          {
-            name: 'T',
+          sequence: {
             type: 7,
           },
-          {
-            name: 'E',
-            type: 8,
-          },
-        ],
-        path: ['Result'],
+        },
       },
     },
     {
       id: 7,
       type: {
         def: {
-          primitive: 'bool',
+          composite: {
+            fields: [
+              {
+                name: "payload",
+                type: 5,
+                typeName: "String",
+              },
+              {
+                name: "id",
+                type: 5,
+                typeName: "String",
+              },
+            ],
+          },
         },
+        path: ["rubeus", "rubeus", "Note"],
       },
     },
     {
@@ -359,36 +451,84 @@ export default {
           variant: {
             variants: [
               {
+                fields: [
+                  {
+                    type: 9,
+                  },
+                ],
                 index: 0,
-                name: 'AccessOwner',
+                name: "Ok",
               },
               {
+                fields: [
+                  {
+                    type: 10,
+                  },
+                ],
                 index: 1,
-                name: 'NotFound',
-              },
-              {
-                index: 2,
-                name: 'TransferFailed',
-              },
-              {
-                index: 3,
-                name: 'UniqueIdRequired',
+                name: "Err",
               },
             ],
           },
         },
-        path: ['rubeus', 'rubeus', 'Error'],
+        params: [
+          {
+            name: "T",
+            type: 9,
+          },
+          {
+            name: "E",
+            type: 10,
+          },
+        ],
+        path: ["Result"],
       },
     },
     {
       id: 9,
       type: {
         def: {
+          primitive: "bool",
+        },
+      },
+    },
+    {
+      id: 10,
+      type: {
+        def: {
           variant: {
             variants: [
               {
                 index: 0,
-                name: 'None',
+                name: "AccessOwner",
+              },
+              {
+                index: 1,
+                name: "NotFound",
+              },
+              {
+                index: 2,
+                name: "TransferFailed",
+              },
+              {
+                index: 3,
+                name: "UniqueIdRequired",
+              },
+            ],
+          },
+        },
+        path: ["rubeus", "rubeus", "Error"],
+      },
+    },
+    {
+      id: 11,
+      type: {
+        def: {
+          variant: {
+            variants: [
+              {
+                index: 0,
+                name: "None",
               },
               {
                 fields: [
@@ -397,20 +537,20 @@ export default {
                   },
                 ],
                 index: 1,
-                name: 'Some',
+                name: "Some",
               },
             ],
           },
         },
         params: [
           {
-            name: 'T',
+            name: "T",
             type: 5,
           },
         ],
-        path: ['Option'],
+        path: ["Option"],
       },
     },
   ],
-  version: '4',
-}
+  version: "4",
+};

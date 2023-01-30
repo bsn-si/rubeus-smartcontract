@@ -81,7 +81,7 @@ export const execContractCallWithResult = async (
       throw error;
     }
   } else {
-    throw query.result.asErr().toJSON();
+    throw query.result.asErr.toJSON();
   }
 };
 

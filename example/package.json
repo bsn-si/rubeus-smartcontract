@@ -10,11 +10,11 @@
     "start": "ts-node ./src/example.ts"
   },
   "dependencies": {
-    "@polkadot/api": "^9.4.3",
-    "@polkadot/api-contract": "^9.4.3",
-    "@polkadot/keyring": "^10.1.9",
-    "@polkadot/util": "^10.1.9",
-    "@polkadot/util-crypto": "^10.1.9",
+    "@polkadot/api": "^9.5.1",
+    "@polkadot/api-contract": "^9.5.1",
+    "@polkadot/keyring": "^10.1.10",
+    "@polkadot/util": "^10.1.10",
+    "@polkadot/util-crypto": "^10.1.10",
     "bn.js": "^5.2.0",
     "js-chacha20": "^1.1.0",
     "pako": "^2.1.0"

@@ -57,7 +57,7 @@ function encryptToHex(
   const nonce = address.toU8a().slice(0, 12);
   // encrypt binary payload with nonce
   const encrypted = new JSChaCha20(hexToU8a(key), nonce).encrypt(message);
-  // zip data 
+  // zip data
   const compressed = pako.deflate(encrypted);
   // convert to hex string
   const hex = u8aToHex(compressed, undefined, false);
@@ -192,6 +192,79 @@ async function updateCredential(
   return response;
 }
 
+// get all notes with decrypted payload data
+async function getNotes(
+  contract: Contract<"promise">,
+  signer: KeyringPair,
+  privateKey: string // same as signer
+) {
+  const list = await contract.query
+    .getNotes(signer.address, { gasLimit: -1 })
+    .then((response) => response.output.toJSON() as any)
+    .then((data) =>
+      data.map((note) => {
+        note.decrypted = decryptFromHex(
+          contract.address,
+          privateKey,
+          note.payload
+        );
+
+        return note;
+      })
+    );
+
+  return list;
+}
+
+// add new note with chacha20 encryption to contract
+async function addNote(
+  contract: Contract<"promise">,
+  signer: KeyringPair,
+  privateKey: string, // same as signer in hex
+  payload: any
+) {
+  // encrypt note payload by caller private key
+  const encrypted = encryptToHex(contract.address, privateKey, payload);
+  // generate unique id for note
+  const id = generateUUID();
+
+  const response = await execContractCallWithResult(
+    contract,
+    signer,
+    "addNote",
+    encrypted,
+    id
+  );
+
+  return {
+    payload: encrypted,
+    response,
+    id,
+  };
+}
+
+async function updateNote(
+  contract: Contract<"promise">,
+  signer: KeyringPair,
+  privateKey: string, // same as signer in hex
+  id: string,
+  payload?: any
+) {
+  const _payload = payload
+    ? encryptToHex(contract.address, privateKey, payload)
+    : undefined;
+
+  const response = await execContractCallWithResult(
+    contract,
+    signer,
+    "updateNote",
+    id,
+    _payload
+  );
+
+  return response;
+}
+
 async function main() {
   const keyring = new Keyring({ type: "sr25519" });
   const api = await connect(RPC_URL);
@@ -207,34 +280,85 @@ async function main() {
   const contract = await uploadContract(api, signer, wasm);
   console.log("Contract upload & Instantiated: ", contract.address.toHuman());
 
+  const testCredentialPayload = {
+    host: "https://test.test",
+    password: "test",
+    login: "test",
+  };
+
   // Add new credential to instantiated contract
-  const addResponse = await addCredential(
+  const addCredentialResponse = await addCredential(
     contract,
     signer,
     privateKey,
     "test",
-    {
-      host: "https://test.test",
-      password: "test",
-      login: "test",
-    }
+    testCredentialPayload
   );
 
-  console.log("Credential added: ", addResponse);
+  console.log("Credential added: ", addCredentialResponse);
 
   // Load list of credentials
   const credentials = await getCredentials(contract, signer, privateKey);
   console.log("Credentials: ", credentials);
+
+  // Update credentials
+  const updateCredentialResponse = await updateCredential(
+    contract,
+    signer,
+    privateKey,
+    credentials[0].id,
+    "updated_group",
+    Object.assign({}, testCredentialPayload, {
+      password: "updated",
+    })
+  );
+
+  console.log(
+    "Credential updated",
+    credentials[0].id,
+    updateCredentialResponse
+  );
 
   // Load list of credentials by group
   const credentialsByGroup = await getCredentialsByGroup(
     contract,
     signer,
     privateKey,
-    "test"
+    "updated_group"
   );
 
-  console.log("Credentials By Group 'test': ", credentialsByGroup);
+  console.log("Credentials By Group 'updated_group': ", credentialsByGroup);
+
+  // Create new note
+  const testNotePayload = {
+    title: "Test",
+    text: "My Note!",
+  };
+
+  const addNoteResponse = await addNote(
+    contract,
+    signer,
+    privateKey,
+    testNotePayload
+  );
+
+  console.log("Note added", addNoteResponse);
+
+  const notes = await getNotes(contract, signer, privateKey);
+  console.log("Notes list", notes);
+
+  const updatedNoteResponse = await updateNote(
+    contract,
+    signer,
+    privateKey,
+    notes[0].id,
+    Object.assign({}, testNotePayload, { title: "Updated title" })
+  );
+
+  console.log(`Note "${notes[0].id}" updated`, updatedNoteResponse);
+
+  const updatedNotes = await getNotes(contract, signer, privateKey);
+  console.log("Updated notes list", updatedNotes);
 }
 
 main()
