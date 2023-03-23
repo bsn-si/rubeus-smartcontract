@@ -69,7 +69,7 @@ A short video explaining how to comile the smart-contract:
 [![compile_and_instanite](https://user-images.githubusercontent.com/98888366/199804377-519b1651-f2ef-4d3b-b1be-cf9dd634b4c4.png)](https://media.bsn.si/rubeus/compile_and_instantiate_contract.mp4)
 
 ## Related repos
-[Rubeus browser extension](https://github.com/bsn-si/rubeus-client)
+[Rubeus Keeper browser extension](https://github.com/bsn-si/rubeus-client)
 
 ## License
 
